@@ -9,7 +9,7 @@ import tensorflow as tf
 def init_weights(shape, name):
     return tf.get_variable(name, shape=shape, initializer=tf.contrib.layers.xavier_initializer())
 
-    
+
 def init_biases(shape):
     return tf.Variable(tf.zeros(shape))
 
@@ -34,14 +34,14 @@ def batchNorm(x, n_out, phase_train, scope='bn'):
 
 
 class batch_norm(object):
-  	def __init__(self, epsilon=1e-5, momentum = 0.9, name="batch_norm"):
-		with tf.variable_scope(name):
-			self.epsilon  = epsilon
-      		self.momentum = momentum
-      		self.name = name
+    def __init__(self, epsilon=1e-5, momentum = 0.9, name="batch_norm"):
+        with tf.variable_scope(name):
+            self.epsilon  = epsilon
+            self.momentum = momentum
+            self.name = name
 
-	def __call__(self, x, train=True):
-		return tf.contrib.layers.batch_norm(x,
+    def __call__(self, x, train=True):
+        return tf.contrib.layers.batch_norm(x,
                       decay=self.momentum, 
                       updates_collections=None,
                       epsilon=self.epsilon,
@@ -57,8 +57,3 @@ def threshold(x, val=0.5):
 
 def lrelu(x, leak=0.2):
     return tf.maximum(x, leak*x)
-
-# def lrelu(x, leak=0.2):
-#     f1 = 0.5 * (1 + leak)
-#     f2 = 0.5 * (1 - leak)
-#     return f1 * x + f2 * abs(x)

@@ -157,7 +157,7 @@ def trainGAN():
 
     with tf.Session() as sess:  
       
-        sess.run(tf.global_variables_initializer())        
+        sess.run(tf.global_variables_initializer())
         z_sample = np.random.normal(0, 0.33, size=[batch_size, z_size]).astype(np.float32)
         volumes = d.getAll(obj=obj, train=True, is_local=True)
         volumes = volumes[...,np.newaxis].astype(np.float) 
