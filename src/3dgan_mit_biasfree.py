@@ -23,10 +23,10 @@ z_size     = 200
 leak_value = 0.2
 cube_len   = 64
 obj_ratio  = 0.7
-obj        = 'chair' 
+obj        = 'chair'
 
-train_sample_directory = './train_sample/'
-model_directory = './models/'
+train_sample_directory = '/data/unagi0/arase/3dgan/chair/train_sample/'
+model_directory = '/data/unagi0/arase/3dgan/chair/models/'
 is_local = False
 
 weights = {}
@@ -107,13 +107,13 @@ def initialiseWeights():
     weights['wg2'] = tf.get_variable("wg2", shape=[4, 4, 4, 256, 512], initializer=xavier_init)
     weights['wg3'] = tf.get_variable("wg3", shape=[4, 4, 4, 128, 256], initializer=xavier_init)
     weights['wg4'] = tf.get_variable("wg4", shape=[4, 4, 4, 64, 128], initializer=xavier_init)
-    weights['wg5'] = tf.get_variable("wg5", shape=[4, 4, 4, 1, 64], initializer=xavier_init)    
+    weights['wg5'] = tf.get_variable("wg5", shape=[4, 4, 4, 1, 64], initializer=xavier_init)
 
     weights['wd1'] = tf.get_variable("wd1", shape=[4, 4, 4, 1, 64], initializer=xavier_init)
     weights['wd2'] = tf.get_variable("wd2", shape=[4, 4, 4, 64, 128], initializer=xavier_init)
     weights['wd3'] = tf.get_variable("wd3", shape=[4, 4, 4, 128, 256], initializer=xavier_init)
-    weights['wd4'] = tf.get_variable("wd4", shape=[4, 4, 4, 256, 512], initializer=xavier_init)    
-    weights['wd5'] = tf.get_variable("wd5", shape=[4, 4, 4, 512, 1], initializer=xavier_init)    
+    weights['wd4'] = tf.get_variable("wd4", shape=[4, 4, 4, 256, 512], initializer=xavier_init)
+    weights['wd5'] = tf.get_variable("wd5", shape=[4, 4, 4, 512, 1], initializer=xavier_init)
 
     return weights
 
@@ -125,7 +125,7 @@ def trainGAN(is_dummy=False, checkpoint=None):
     z_vector = tf.placeholder(shape=[batch_size,z_size],dtype=tf.float32) 
     x_vector = tf.placeholder(shape=[batch_size,cube_len,cube_len,cube_len,1],dtype=tf.float32) 
 
-    net_g_train = generator(z_vector, phase_train=True, reuse=False) 
+    net_g_train = generator(z_vector, phase_train=True, reuse=False)
 
     d_output_x, d_no_sigmoid_output_x = discriminator(x_vector, phase_train=True, reuse=False)
     d_output_x = tf.maximum(tf.minimum(d_output_x, 0.99), 0.01)
@@ -223,8 +223,8 @@ def trainGAN(is_dummy=False, checkpoint=None):
                 id_ch = np.random.randint(0, batch_size, 4)
                 for i in range(4):
                     if g_objects[id_ch[i]].max() > 0.5:
-    		            d.plotVoxelVisdom(np.squeeze(g_objects[id_ch[i]]>0.5), vis, '_'.join(map(str,[epoch,i])))          
-            if epoch % 50 == 10:
+                        d.plotVoxelVisdom(np.squeeze(g_objects[id_ch[i]]>0.5), vis, '_'.join(map(str,[epoch,i])))
+            if epoch % 500 == 10:
                 if not os.path.exists(model_directory):
                     os.makedirs(model_directory)      
                 saver.save(sess, save_path = model_directory + '/biasfree_' + str(epoch) + '.cptk')
@@ -234,7 +234,7 @@ def testGAN(trained_model_path=None, n_batches=40):
 
     weights = initialiseWeights()
 
-    z_vector = tf.placeholder(shape=[batch_size,z_size],dtype=tf.float32) 
+    z_vector = tf.placeholder(shape=[batch_size,z_size],dtype=tf.float32)
     net_g_test = generator(z_vector, phase_train=True, reuse=True)
 
     vis = visdom.Visdom()
@@ -248,7 +248,7 @@ def testGAN(trained_model_path=None, n_batches=40):
 
         # output generated chairs
         for i in range(n_batches):
-            next_sigma = float(raw_input())
+            next_sigma = float(input())
             z_sample = np.random.normal(0, next_sigma, size=[batch_size, z_size]).astype(np.float32)
             g_objects = sess.run(net_g_test,feed_dict={z_vector:z_sample})
             id_ch = np.random.randint(0, batch_size, 4)
