@@ -269,14 +269,18 @@ def trainGAN(is_dummy=False, checkpoint=None):
                 saver.save(sess, save_path = model_directory + '/biasfree_' + str(epoch) + '.cptk')
 
 
-def testGAN(trained_model_path=None, n_batches=40):
+def testGAN(trained_model_path=None, n_batches=32):
 
     weights = initialiseWeights()
 
-    z_vector = tf.placeholder(shape=[batch_size,z_size],dtype=tf.float32)
-    # c_vector = 
+    z_vector = tf.placeholder(shape=[batch_size, z_size], dtype=tf.float32)
 
-    net_g_test = generator(z_vector, phase_train=True, reuse=False)
+    y_vector = tf.placeholder(shape=[batch_size], dtype=tf.int32)
+    c_vector = tf.one_hot(y_vector, c_size)
+
+    zc_vector = tf.concat([z_vector, c_vector], 1)
+
+    net_g_test = generator(zc_vector, phase_train=True, reuse=False)
 
     vis = visdom.Visdom()
 
@@ -289,9 +293,12 @@ def testGAN(trained_model_path=None, n_batches=40):
 
         # output generated chairs
         for i in range(n_batches):
-            next_sigma = float(input())
+            next_sigma, c = input().split()
+            next_sigma = float(next_sigma)
+            c = int(c)
             z_sample = np.random.normal(0, next_sigma, size=[batch_size, z_size]).astype(np.float32)
-            g_objects = sess.run(net_g_test,feed_dict={z_vector:z_sample})
+            c_sample = np.ones(batch_size) * c
+            g_objects = sess.run(net_g_test,feed_dict={z_vector:z_sample, y_vector:c_sample})
             id_ch = np.random.randint(0, batch_size, 4)
             for i in range(4):
                 print(g_objects[id_ch[i]].max(), g_objects[id_ch[i]].min(), g_objects[id_ch[i]].shape)
