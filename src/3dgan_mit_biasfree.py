@@ -235,7 +235,7 @@ def testGAN(trained_model_path=None, n_batches=40):
     weights = initialiseWeights()
 
     z_vector = tf.placeholder(shape=[batch_size,z_size],dtype=tf.float32)
-    net_g_test = generator(z_vector, phase_train=True, reuse=True)
+    net_g_test = generator(z_vector, phase_train=True, reuse=False)
 
     vis = visdom.Visdom()
 
