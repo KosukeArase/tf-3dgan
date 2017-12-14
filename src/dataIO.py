@@ -93,6 +93,24 @@ def getAll(obj='airplane',train=True, is_local=False, cube_len=64, obj_ratio=1.0
     volumeBatch = np.asarray([getVoxelFromMat(objPath + f, cube_len) for f in fileList],dtype=np.bool)
     return volumeBatch
 
+def getAllWithLabel(objs=['airplane'], train=True, is_local=False, cube_len=64, obj_ratios=[1.0]):
+    for obj, obj_ratio in zip(objs, obj_ratios):
+        c = objs.index(obj)
+        objPath = SERVER_PATH + obj + '/30/'
+        if is_local:
+            objPath = LOCAL_PATH + obj + '/30/'
+        objPath += 'train/' if train else 'test/'
+        fileList = [f for f in os.listdir(objPath) if f.endswith('.mat')]
+        fileList = fileList[0:int(obj_ratio*len(fileList))]
+        try:
+            volumeBatch = np.concatenate([volumeBatch, np.asarray([getVoxelFromMat(objPath + f, cube_len) for f in fileList], dtype=np.bool)], axis=0)
+            labelBatch = np.concatenate([labelBatch, np.ones(len(fileList))*c], axis=0)
+        except:
+            volumeBatch = np.asarray([getVoxelFromMat(objPath + f, cube_len) for f in fileList], dtype=np.bool)
+            labelBatch = np.ones(len(fileList))*c
+
+    return volumeBatch, labelBatch
+
 
 if __name__ == '__main__':
     path = sys.argv[1]

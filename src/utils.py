@@ -57,3 +57,18 @@ def threshold(x, val=0.5):
 
 def lrelu(x, leak=0.2):
     return tf.maximum(x, leak*x)
+
+
+def fc(x, num_outputs, scope="fc"):
+
+    with tf.variable_scope(scope):
+        w = tf.get_variable(
+            'w', [x.get_shape()[-1], num_outputs],
+            initializer=tf.truncated_normal_initializer(stddev=0.02))
+
+        biases = tf.get_variable(
+            'biases', [num_outputs], initializer=tf.constant_initializer(0.0))
+
+        output = tf.nn.bias_add(tf.matmul(x, w), biases)
+
+        return output
