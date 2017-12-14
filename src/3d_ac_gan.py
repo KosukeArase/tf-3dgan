@@ -7,14 +7,13 @@ import numpy as np
 import tensorflow as tf
 import dataIO as d
 
-import ops
 from tqdm import *
 from utils import *
 
 '''
 Global Parameters
 '''
-n_epochs   = 10000
+n_epochs   = 80000
 batch_size = 32
 g_lr       = 0.0025
 d_lr       = 0.00001
@@ -142,7 +141,7 @@ def trainGAN(is_dummy=False, checkpoint=None):
 
     zc_vector = tf.concat([z_vector, c_vector], 1)
 
-    x_vector = tf.placeholder(shape=[batch_size,cube_len,cube_len,cube_len,1],dtype=tf.float32) 
+    x_vector = tf.placeholder(shape=[batch_size,cube_len,cube_len,cube_len,1],dtype=tf.float32)
 
     net_g_train = generator(zc_vector, phase_train=True, reuse=False)
 
@@ -243,20 +242,20 @@ def trainGAN(is_dummy=False, checkpoint=None):
                                                 summary_d_acc])
 
             summary_d, discriminator_loss = sess.run([d_summary_merge, d_loss],feed_dict={z_vector:z, x_vector:x, y_vector:c})
-            summary_g, generator_loss = sess.run([summary_g_loss,g_loss],feed_dict={z_vector:z, y_vector:c})
-            d_accuracy, n_x, n_z = sess.run([d_acc, n_p_x, n_p_z],feed_dict={z_vector:z, x_vector:x})
+            summary_g, generator_loss = sess.run([summary_g_loss,g_loss],feed_dict={z_vector:z, x_vector:x, y_vector:c})
+            d_accuracy, c_loss_real, c_loss_fake, n_x, n_z = sess.run([d_acc, class_loss_real, class_loss_fake, n_p_x, n_p_z],feed_dict={z_vector:z, x_vector:x, y_vector:c})
             print(n_x, n_z)
 
             if d_accuracy < d_thresh:
                 sess.run([optimizer_op_d],feed_dict={z_vector:z, x_vector:x, y_vector:c})
-                print('Discriminator Training ', "epoch: ",epoch,', d_loss:',discriminator_loss,'g_loss:',generator_loss, "d_acc: ", d_accuracy)
+                print('Discriminator Training ', "epoch: ",epoch,', d_loss:',discriminator_loss,'g_loss:',generator_loss, "d_acc: ", d_accuracy, "c_loss_real: ", c_loss_real, "c_loss_fake: ", c_loss_fake)
 
-            sess.run([optimizer_op_g],feed_dict={z_vector:z, y_vector:c})
-            print('Generator Training ', "epoch: ",epoch,', d_loss:',discriminator_loss,'g_loss:',generator_loss, "d_acc: ", d_accuracy)
+            sess.run([optimizer_op_g],feed_dict={z_vector:z, x_vector:x, y_vector:c})
+            print('Generator Training ', "epoch: ",epoch,', d_loss:',discriminator_loss,'g_loss:',generator_loss, "d_acc: ", d_accuracy, "c_loss_real: ", c_loss_real, "c_loss_fake: ", c_loss_fake)
 
             # output generated chairs
             if epoch % 200 == 0:
-                g_objects = sess.run(net_g_test,feed_dict={z_vector:z_sample, y_vector:c_sample})
+                g_objects = sess.run(net_g_test,feed_dict={z_vector:z_sample, x_vector:x, y_vector:c_sample})
                 if not os.path.exists(train_sample_directory):
                     os.makedirs(train_sample_directory)
                 g_objects.dump(train_sample_directory+'/biasfree_'+str(epoch))
@@ -266,7 +265,7 @@ def trainGAN(is_dummy=False, checkpoint=None):
                         d.plotVoxelVisdom(np.squeeze(g_objects[id_ch[i]]>0.5), vis, '_'.join(map(str,[epoch,i])))
             if epoch % 500 == 10:
                 if not os.path.exists(model_directory):
-                    os.makedirs(model_directory)      
+                    os.makedirs(model_directory)
                 saver.save(sess, save_path = model_directory + '/biasfree_' + str(epoch) + '.cptk')
 
 

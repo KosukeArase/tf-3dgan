@@ -13,7 +13,7 @@ from utils import *
 '''
 Global Parameters
 '''
-n_epochs   = 10000
+n_epochs   = 40000
 batch_size = 32
 g_lr       = 0.0025
 d_lr       = 0.00001
@@ -23,7 +23,8 @@ z_size     = 200
 leak_value = 0.2
 cube_len   = 64
 obj_ratio  = 0.7
-obj        = 'chair'
+obj        = 'vase_table_car_airplane'
+obj        = 'airplane'
 
 train_sample_directory = '/data/unagi0/arase/3dgan/chair/train_sample/'
 model_directory = '/data/unagi0/arase/3dgan/chair/models/'
@@ -169,9 +170,7 @@ def trainGAN(is_dummy=False, checkpoint=None):
     saver = tf.train.Saver() 
     vis = visdom.Visdom()
 
-
     with tf.Session() as sess:
-
         sess.run(tf.global_variables_initializer())
         if checkpoint is not None:
             saver.restore(sess, checkpoint)
@@ -205,6 +204,12 @@ def trainGAN(is_dummy=False, checkpoint=None):
             summary_d, discriminator_loss = sess.run([d_summary_merge,d_loss],feed_dict={z_vector:z, x_vector:x})
             summary_g, generator_loss = sess.run([summary_g_loss,g_loss],feed_dict={z_vector:z})  
             d_accuracy, n_x, n_z = sess.run([d_acc, n_p_x, n_p_z],feed_dict={z_vector:z, x_vector:x})
+
+
+            merged = tf.summary.merge_all()
+            writer = tf.summary.FileWriter("./board", sess.graph )
+
+
             print(n_x, n_z)
 
             if d_accuracy < d_thresh:
